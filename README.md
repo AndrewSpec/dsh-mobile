@@ -27,7 +27,7 @@ The APK uses application ID `io.github.apriljk.dshremote`. Verify the downloaded
 
 ## Languages and theme
 
-The app interface is available in English, Polish, and Simplified Chinese. It follows the phone's system language by default and falls back to English for unsupported languages. Settings lets you choose the language for the current session and switch between light and dark themes. The language choice does not change the account, pairing, or stored credentials. Computer names, paths, URLs, protocol identifiers, and error codes are not translated.
+The app interface is available in English, Polish, and Simplified Chinese. It follows the phone's system language by default and falls back to English for unsupported languages. Settings lets you choose the language and switch between light and dark themes; both choices persist across launches. The signed-in e-mail is hidden by default and is revealed only for the current visit with the eye button. The language choice does not change the account, pairing, or stored credentials. Computer names, paths, URLs, protocol identifiers, and error codes are not translated.
 
 ## Run with the production Relay
 

@@ -9,7 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/api_exception.dart';
 import '../domain/models.dart';
 
-/// Null follows the operating system. Deliberately session-only: no migration.
+/// Null follows the operating system. The active value is seeded from the
+/// persisted preferences store before the first frame.
 final appLocaleProvider = StateProvider<Locale?>((ref) => null);
 
 /// The JSON catalogs are the sole owner of application-authored display copy.

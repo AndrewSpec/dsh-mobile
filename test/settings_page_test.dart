@@ -1,4 +1,5 @@
 import 'package:dsh_mobile/core/theme.dart';
+import 'package:dsh_mobile/data/app_preferences_store.dart';
 import 'package:dsh_mobile/data/relay_service.dart';
 import 'package:dsh_mobile/data/device_key_store.dart';
 import 'package:dsh_mobile/data/token_store.dart';
@@ -17,6 +18,16 @@ Widget _settingsApp() => MaterialApp(
   supportedLocales: AppLocalizations.supportedLocales,
   home: const SettingsPage(),
 );
+
+class _SignedInAuthController extends AuthController {
+  _SignedInAuthController()
+    : super(service: MockRelayService(), tokenStore: MemoryTokenStore()) {
+    state = const AuthState(
+      status: AuthStatus.authenticated,
+      email: 'private@example.com',
+    );
+  }
+}
 
 void main() {
   setUpAll(() async {
@@ -55,11 +66,13 @@ void main() {
   testWidgets('language and theme are frameless controls in their sections', (
     tester,
   ) async {
+    final preferences = MemoryAppPreferencesStore();
     final container = ProviderContainer(
       overrides: [
         deviceKeyStoreProvider.overrideWithValue(MemoryDeviceKeyStore()),
         tokenStoreProvider.overrideWithValue(MemoryTokenStore()),
         relayServiceProvider.overrideWithValue(MockRelayService()),
+        appPreferencesStoreProvider.overrideWithValue(preferences),
         installedAppVersionProvider.overrideWith(
           (ref) async =>
               const InstalledAppVersion(version: '1.2.3', buildNumber: '42'),
@@ -88,12 +101,14 @@ void main() {
     await tester.tap(find.text('Dark').last);
     await tester.pumpAndSettle();
     expect(container.read(appThemeProvider), ThemeMode.dark);
+    expect(preferences.themeMode, ThemeMode.dark);
 
     await tester.tap(find.byType(DropdownButton<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Polish').last);
     await tester.pumpAndSettle();
     expect(container.read(appLocaleProvider)?.languageCode, 'pl');
+    expect(preferences.locale?.languageCode, 'pl');
   });
 
   testWidgets('changing the language in settings re-renders the page', (
@@ -104,6 +119,9 @@ void main() {
         deviceKeyStoreProvider.overrideWithValue(MemoryDeviceKeyStore()),
         tokenStoreProvider.overrideWithValue(MemoryTokenStore()),
         relayServiceProvider.overrideWithValue(MockRelayService()),
+        appPreferencesStoreProvider.overrideWithValue(
+          MemoryAppPreferencesStore(),
+        ),
         installedAppVersionProvider.overrideWith(
           (ref) async =>
               const InstalledAppVersion(version: '1.2.3', buildNumber: '42'),
@@ -182,5 +200,45 @@ void main() {
       container.read(authControllerProvider).status,
       AuthStatus.unauthenticated,
     );
+  });
+
+  testWidgets('hides the signed-in email until the user reveals it', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deviceKeyStoreProvider.overrideWithValue(MemoryDeviceKeyStore()),
+          tokenStoreProvider.overrideWithValue(MemoryTokenStore()),
+          relayServiceProvider.overrideWithValue(MockRelayService()),
+          authControllerProvider.overrideWith(
+            (ref) => _SignedInAuthController(),
+          ),
+          installedAppVersionProvider.overrideWith(
+            (ref) async =>
+                const InstalledAppVersion(version: '1.2.3', buildNumber: '42'),
+          ),
+        ],
+        child: _settingsApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hidden'), findsOneWidget);
+    expect(find.text('private@example.com'), findsNothing);
+
+    await tester.tap(find.byTooltip('Show e-mail address'));
+    await tester.pumpAndSettle();
+    expect(find.text('private@example.com'), findsOneWidget);
+    expect(find.text('Hidden'), findsNothing);
+
+    await tester.tap(find.byTooltip('Hide e-mail address'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hidden'), findsOneWidget);
+    expect(find.text('private@example.com'), findsNothing);
   });
 }

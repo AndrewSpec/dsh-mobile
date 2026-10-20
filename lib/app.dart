@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme.dart';
+import 'data/app_preferences_store.dart';
 import 'l10n/app_localizations.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/auth/login_page.dart';
 import 'features/devices/device_list_page.dart';
 import 'features/update/app_update_prompt.dart';
+
+/// Seeds the language and theme providers from persisted preferences before
+/// the first frame, so the app starts in the stored state.
+List<Override> appPreferenceOverrides(AppPreferences preferences) => [
+  appLocaleProvider.overrideWith((ref) => preferences.locale),
+  appThemeProvider.overrideWith((ref) => preferences.themeMode),
+];
 
 class DshRemoteApp extends ConsumerWidget {
   const DshRemoteApp({super.key});

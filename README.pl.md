@@ -25,6 +25,10 @@ APK używa identyfikatora aplikacji `io.github.apriljk.dshremote`. Przed instala
 - iOS 14 lub nowszy
 - Android 8.0 (API 26) lub nowszy
 
+## Języki i motyw
+
+Interfejs aplikacji jest dostępny po angielsku, polsku i chińsku uproszczonym. Domyślnie wybiera język systemu telefonu, a dla nieobsługiwanego języka wraca do angielskiego. W Ustawieniach można wybrać język oraz jasny lub ciemny motyw; oba wybory są zapamiętywane między uruchomieniami. Adres e-mail zalogowanego konta jest domyślnie ukryty i pokazuje się tylko na czas bieżącej wizyty po naciśnięciu przycisku oka. Wybór języka nie zmienia konta, parowania ani zapisanych danych logowania. Nazwy komputerów, ścieżki, adresy URL, identyfikatory protokołu i kody błędów nie są tłumaczone.
+
 ## Uruchamianie z produkcyjnym Relay
 
 Domyślna kompilacja łączy się z `https://relay.dshmobile.online`:

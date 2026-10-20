@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/app_preferences_store.dart';
 import '../l10n/app_localizations.dart';
 
 /// Frame-less language control for the settings card: the card is the only
@@ -44,8 +45,12 @@ class LanguageSelector extends ConsumerWidget {
           ),
         ],
         onChanged: (value) {
-          ref.read(appLocaleProvider.notifier).state =
-              value == null || value == 'system' ? null : Locale(value);
+          final locale = value == null || value == 'system'
+              ? null
+              : Locale(value);
+          ref.read(appLocaleProvider.notifier).state = locale;
+          // Persistence is best effort: the current session already switched.
+          ref.read(appPreferencesStoreProvider).writeLocale(locale).ignore();
         },
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme.dart';
+import '../data/app_preferences_store.dart';
 import '../l10n/app_localizations.dart';
 
 /// Frame-less theme control for the settings card: the card is the only
@@ -33,9 +34,10 @@ class ThemeSelector extends ConsumerWidget {
           ),
         ],
         onChanged: (value) {
-          if (value != null) {
-            ref.read(appThemeProvider.notifier).state = value;
-          }
+          if (value == null) return;
+          ref.read(appThemeProvider.notifier).state = value;
+          // Persistence is best effort: the current session already switched.
+          ref.read(appPreferencesStoreProvider).writeThemeMode(value).ignore();
         },
       ),
     );

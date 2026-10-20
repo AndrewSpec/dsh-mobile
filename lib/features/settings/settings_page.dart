@@ -32,13 +32,7 @@ class SettingsPage extends ConsumerWidget {
         children: [
           _SettingsSection(
             title: l10n.text('account'),
-            children: [
-              ListTile(
-                leading: const Icon(Icons.alternate_email_rounded),
-                title: Text(l10n.text('loginEmail')),
-                subtitle: Text(auth.email ?? ''),
-              ),
-            ],
+            children: [_AccountEmailTile(email: auth.email ?? '')],
           ),
           const SizedBox(height: 16),
           // The card is the only surface: the controls must not draw their own
@@ -211,6 +205,47 @@ class _SettingsSection extends StatelessWidget {
           child: Column(children: children),
         ),
       ],
+    );
+  }
+}
+
+/// The account address is private by default: it is only revealed for the
+/// current visit and is hidden again whenever Settings is reopened.
+class _AccountEmailTile extends StatefulWidget {
+  const _AccountEmailTile({required this.email});
+
+  final String email;
+
+  @override
+  State<_AccountEmailTile> createState() => _AccountEmailTileState();
+}
+
+class _AccountEmailTileState extends State<_AccountEmailTile> {
+  bool _revealed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final hasEmail = widget.email.isNotEmpty;
+    return ListTile(
+      leading: const Icon(Icons.alternate_email_rounded),
+      title: Text(l10n.text('loginEmail')),
+      subtitle: Text(
+        hasEmail ? (_revealed ? widget.email : l10n.text('emailHidden')) : '',
+      ),
+      trailing: hasEmail
+          ? IconButton(
+              tooltip: _revealed
+                  ? l10n.text('hideEmail')
+                  : l10n.text('showEmail'),
+              icon: Icon(
+                _revealed
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+              ),
+              onPressed: () => setState(() => _revealed = !_revealed),
+            )
+          : null,
     );
   }
 }
