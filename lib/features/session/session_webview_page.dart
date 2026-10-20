@@ -43,6 +43,7 @@ class SessionWebViewPage extends ConsumerStatefulWidget {
 
 class _SessionWebViewPageState extends ConsumerState<SessionWebViewPage> {
   final _openedAt = DateTime.now();
+  late final Analytics _analytics;
   InAppWebViewController? _controller;
   Uri? _sessionUrl;
   LocalSessionProxy? _proxy;
@@ -56,12 +57,15 @@ class _SessionWebViewPageState extends ConsumerState<SessionWebViewPage> {
   @override
   void initState() {
     super.initState();
+    // Captured before disposal: Riverpod forbids ref access from dispose, and
+    // the session duration is reported there.
+    _analytics = ref.read(analyticsProvider);
     Future<void>.microtask(_openSession);
   }
 
   @override
   void dispose() {
-    ref.read(analyticsProvider).track('session_duration', {
+    _analytics.track('session_duration', {
       'deviceId': widget.device.id,
       'seconds': DateTime.now().difference(_openedAt).inSeconds,
     });
@@ -300,40 +304,43 @@ class _SessionWebViewPageState extends ConsumerState<SessionWebViewPage> {
                 )
               : null,
         ),
-        body: switch (_state) {
-          _SessionViewState.loading => const _SessionSkeleton(),
-          _SessionViewState.webView => _sessionContent(),
-          _SessionViewState.deviceOffline => _SessionError(
-            icon: Icons.computer_outlined,
-            title: l10n.text('offlineTitle'),
-            message: l10n.text('offlineHelp'),
-            onRetry: _reload,
-          ),
-          _SessionViewState.dshOffline => _SessionError(
-            icon: Icons.power_settings_new_rounded,
-            title: l10n.text('dshOffline'),
-            message: l10n.text('dshOfflineHelp'),
-            onRetry: _reload,
-          ),
-          _SessionViewState.tunnelTimeout => _SessionError(
-            icon: Icons.timer_outlined,
-            title: l10n.text('timeoutTitle'),
-            message: l10n.text('timeoutHelp'),
-            onRetry: _reload,
-          ),
-          _SessionViewState.encryptionRequired => _SessionError(
-            icon: Icons.qr_code_2_rounded,
-            title: l10n.text('rescanTitle'),
-            message: l10n.text('rescanHelp'),
-            onRetry: _reload,
-          ),
-          _SessionViewState.failed => _SessionError(
-            icon: Icons.cloud_off_outlined,
-            title: l10n.text('connectionFailed'),
-            message: l10n.text('connectionFailedHelp'),
-            onRetry: _reload,
-          ),
-        },
+        body: SafeArea(
+          top: false,
+          child: switch (_state) {
+            _SessionViewState.loading => const _SessionSkeleton(),
+            _SessionViewState.webView => _sessionContent(),
+            _SessionViewState.deviceOffline => _SessionError(
+              icon: Icons.computer_outlined,
+              title: l10n.text('offlineTitle'),
+              message: l10n.text('offlineHelp'),
+              onRetry: _reload,
+            ),
+            _SessionViewState.dshOffline => _SessionError(
+              icon: Icons.power_settings_new_rounded,
+              title: l10n.text('dshOffline'),
+              message: l10n.text('dshOfflineHelp'),
+              onRetry: _reload,
+            ),
+            _SessionViewState.tunnelTimeout => _SessionError(
+              icon: Icons.timer_outlined,
+              title: l10n.text('timeoutTitle'),
+              message: l10n.text('timeoutHelp'),
+              onRetry: _reload,
+            ),
+            _SessionViewState.encryptionRequired => _SessionError(
+              icon: Icons.qr_code_2_rounded,
+              title: l10n.text('rescanTitle'),
+              message: l10n.text('rescanHelp'),
+              onRetry: _reload,
+            ),
+            _SessionViewState.failed => _SessionError(
+              icon: Icons.cloud_off_outlined,
+              title: l10n.text('connectionFailed'),
+              message: l10n.text('connectionFailedHelp'),
+              onRetry: _reload,
+            ),
+          },
+        ),
       ),
     );
   }
